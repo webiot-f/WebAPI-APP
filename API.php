@@ -1,4 +1,5 @@
 <?php
+//TODO POST後の処理
 
 use API\LineNotifySender;
 use API\DatabaseManager;
@@ -17,60 +18,60 @@ $CloseTask = new CloseTask(true);
  */
 $json_string = file_get_contents("php://input");
 $contents = json_decode($json_string);
-if(!isset($contents["token"])){
-	die("必要な情報が入力されていません");
-}elseif($contents["token"] === "---省略---"){
-	if(!isset($contents["type"])){
+/*
+##################センサ側ラズパイ(update時のjson)#######################
+data = {
+        "token": "",            # access token
+        "type": "update",       # 処理の種類 (update)
+        "ratio": "",            # ホコリの比率[%]
+        "concent": "",          # ホコリの濃度[pcs/0.01cf]
+        "temp": "",             # 気温[℃]
+        "humid": "",            # 湿度[%]
+        "press": "",            # 気圧[hPa]
+        "light": "",            # 明るさ
+        "wind": "",             # 風が強いか(bool)
+        "rain": "",             # 雨(センサ, bool)
+        "current": "",          # 現在雨が降っているか(気象予報API, bool)
+        "forecast": ""          # この後雨が降るか(bool)
+    }
+*/
+if($_SERVER['SCRIPT_FILENAME'] !== "/var/www/html/iot/index.php"){
+	if(!isset($contents["token"])){
 		die("必要な情報が入力されていません");
-	}elseif($contents["type"] === "update"){
-		//TODO
-		if(!isset($contents)){
+	}elseif($contents["token"] === "token"){
+		if(!isset($contents["type"])){
 			die("必要な情報が入力されていません");
-		}else{
-			//TODO
+		}elseif($contents["type"] === "update"){
 			$this->Update($contents);
-		}
-	}elseif($contents["type"] === "database"){
-		if(!isset($contents["dboption"])){
-			die("必要な情報が入力されていません");
 		}else{
-			if($contents["dboption"] === "getSensorValue"){
-				return $DB->getSensorValue();
-			}elseif($contents["dboption"] === "getCloseHistory"){
-				return $DB->getCloseHistory();
-			}elseif($contents["dboption"] === "setSettings"){
-				if(!isset($contents["settings"])){
-					//$contents["settings"] は配列にする予定
-					die("必要な情報が入力されていません");
-				}else{
-					return $DB->setSettings($contents["settings"]);
-				}
-			}
+			die("不正なリクエストを検出しました");
 		}
 	}else{
 		die("不正なリクエストを検出しました");
 	}
-}else{
-	die("不正なリクエストを検出しました");
 }
 
 //TODO
-function Update(array $values, string $close, string $token){
+function Update(array $values) :void{
+	//ここで$valuesを分解する
 	$DB->saveSensorValues($values);
-	if($close === "true"){
-		$result = $CloseTask->close();
-		$settings = $DB->getSettings();
-		if(isset($settings)){
-			if($result !== false){
-				$message = "窓を閉めた時のメッセージ";
-				$LineNotify->post_message($message, $token);
-				$DB->saveCloseHistory($values);
-			}else{
-				$message = "窓を閉めるのに失敗したときのメッセージ";
-				$LineNotify->post_message($message, $token);
-			}
+	//ここで閉めるかどうかの判断をする
+	$this->close($values, $reason);
+}
+
+function close(array $values, string $reason) :void{
+	$result = $CloseTask->close();
+	$settings = $DB->getSettings();
+	$token = $settings[""];
+	if(isset($settings)){
+		if($result !== false){
+			$message = $reason;
+			$LineNotify->post_message($message, $token);
+			$DB->saveCloseHistory($values);
+		}else{
+			$message = "[Error] 窓を閉めるのに失敗しました";
+			$LineNotify->post_message($message, $token);
 		}
 	}
 }
-
 ?>

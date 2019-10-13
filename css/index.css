@@ -1,0 +1,31 @@
+/* タブ */
+.tab {
+    border-bottom: 3px solid #727272;
+  }
+  .tab li {
+    color: #333;
+    float: left;
+    margin: 0 10px -1px 0;
+    padding: 10px 20px;
+    border: 1px solid #5900ff;
+    cursor: pointer;
+    list-style: none;
+    transition: .3s;
+  }
+  .tab li.active {
+    color: #fff;
+    background: #0e4700;
+    cursor: auto;
+  }
+   
+  .area ul {
+    display: none;
+  }
+  .area ul.show {
+    display: block;
+  }
+
+/* ボディー */
+body {
+  background-color: #f2f2f2;
+}

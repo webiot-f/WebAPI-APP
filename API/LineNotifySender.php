@@ -1,8 +1,9 @@
 <?php
+//OK
 
 namespace API;
 
-if($_SERVER['SCRIPT_FILENAME'] !== "/var/www/html/iot/API.php"){
+if($_SERVER['SCRIPT_FILENAME'] !== "/var/www/html/iot/API.php" && $_SERVER['SCRIPT_FILENAME'] !== "/var/www/html/iot/index.php"){
 	die("不正なリクエストを検出しました");
 }
 
